@@ -1,5 +1,7 @@
 package cn.finull.mm.chat.config;
 
+import cn.finull.mm.chat.handler.ChatHandler;
+import cn.finull.mm.chat.handler.ChatMessageCodec;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -41,9 +43,11 @@ public class HandlerInitializer extends ChannelInitializer<SocketChannel> {
                 .addLast(new HttpObjectAggregator(MAX_CONTENT_LENGTH))
                 // WebSocket协议后缀为 /ws
                 .addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH))
+                // 自定义消息格式编解码器
+                .addLast(new ChatMessageCodec())
                 // 心跳检测时间为1分钟
                 .addLast(new IdleStateHandler(IDLE_STATE_TIME, IDLE_STATE_TIME, IDLE_STATE_TIME, TimeUnit.MINUTES))
-                // 自定义处理器
-                .addLast();
+                // 聊天处理器
+                .addLast(new ChatHandler());
     }
 }

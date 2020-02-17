@@ -60,7 +60,7 @@ public class ChatServer {
 
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            log.error("服务器宕机！", e);
+            log.error("服务器意外关闭！", e);
         } finally {
             close();
         }

@@ -25,10 +25,13 @@ public final class ServiceFactory {
         SERVICE_HANDLERS.put(MsgTypeEnum.IDLE, chatService::handleIdle);
         SERVICE_HANDLERS.put(MsgTypeEnum.PRIVATE_CHAT, chatService::handlePrivateChat);
         SERVICE_HANDLERS.put(MsgTypeEnum.FRIEND_REQ, chatService::handleFriendReq);
+        SERVICE_HANDLERS.put(MsgTypeEnum.FRIEND_STATUS_UPDATE, chatService::handleFriendReqUpdate);
         SERVICE_HANDLERS.put(MsgTypeEnum.FRIEND_DEL, chatService::handleFriendDel);
         SERVICE_HANDLERS.put(MsgTypeEnum.GROUP_CHAT, chatService::handleGroupChat);
         SERVICE_HANDLERS.put(MsgTypeEnum.REQ_JOIN_GROUP, chatService::handleReqJoinGroup);
+        SERVICE_HANDLERS.put(MsgTypeEnum.REQ_JOIN_GROUP_STATUS_UPDATE, chatService::handleReqJoinGroupStatusUpdate);
         SERVICE_HANDLERS.put(MsgTypeEnum.INVITE_JOIN_GROUP, chatService::handleInviteJoinGroup);
+        SERVICE_HANDLERS.put(MsgTypeEnum.INVITE_JOIN_GROUP_STATUS_UPDATE, chatService::handleInviteJoinGroupStatusUpdate);
     }
 
     public static MessageHandler buildChatService(MsgTypeEnum msgType) {

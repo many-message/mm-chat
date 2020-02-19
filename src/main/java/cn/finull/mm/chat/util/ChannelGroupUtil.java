@@ -71,7 +71,7 @@ public final class ChannelGroupUtil {
     }
 
     /**
-     * 判断当前用户是否
+     * 判断当前用户是否在线
      * @param userId
      * @return
      */

@@ -1,4 +1,4 @@
-package cn.finull.mm.chat.config;
+package cn.finull.mm.chat;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;

@@ -1,4 +1,4 @@
-package cn.finull.mm.chat.config;
+package cn.finull.mm.chat;
 
 import cn.finull.mm.chat.handler.ChatHandler;
 import cn.finull.mm.chat.handler.ChatMessageCodec;

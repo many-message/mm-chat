@@ -22,10 +22,13 @@ public enum MsgTypeEnum {
     IDLE("200", "心跳检测"),
     PRIVATE_CHAT("300", "私聊"),
     FRIEND_REQ("301", "好友请求"),
-    FRIEND_DEL("302", "删除好友"),
+    FRIEND_STATUS_UPDATE("302", "好友状态修改"),
+    FRIEND_DEL("303", "删除好友"),
     GROUP_CHAT("400", "群聊"),
     REQ_JOIN_GROUP("401", "请求加入群"),
-    INVITE_JOIN_GROUP("402", "邀请加入群");
+    REQ_JOIN_GROUP_STATUS_UPDATE("402", "请求入群状态修改"),
+    INVITE_JOIN_GROUP("403", "邀请加入群"),
+    INVITE_JOIN_GROUP_STATUS_UPDATE("404", "邀请入群状态修改");
 
     @JsonValue
     private String code;

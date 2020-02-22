@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ChatService {
 
+    private static final String REQ_AGREE_STATUS = "2";
+
     private final HttpService httpService = HttpService.build();
 
     /**
@@ -92,14 +94,13 @@ public class ChatService {
      */
     public void handleFriendReqUpdate(Channel channel, ReqEntity reqEntity) {
         InboundFriendReqStatusUpdate inboundFriendReqStatusUpdate = JsonUtil.parseObject(reqEntity.getContent(), InboundFriendReqStatusUpdate.class);
-        httpService.updateFriendReqStatus(inboundFriendReqStatusUpdate.getFriendReqId(),
-                inboundFriendReqStatusUpdate.getFriendReqStatus(),
+        httpService.updateFriendReqStatus(inboundFriendReqStatusUpdate,
                 () -> {
-                    if ("2".equals(inboundFriendReqStatusUpdate.getFriendReqStatus())) {
-                        ChannelGroupUtil.writeAndFlush(List.of(inboundFriendReqStatusUpdate.getRecvUserId()),
-                                new RespEntity(MsgTypeEnum.FRIEND_STATUS_UPDATE, null));
+                    RespEntity respEntity = new RespEntity(MsgTypeEnum.FRIEND_STATUS_UPDATE, null);
+                    if (REQ_AGREE_STATUS.equals(inboundFriendReqStatusUpdate.getFriendReqStatus())) {
+                        ChannelGroupUtil.writeAndFlush(List.of(inboundFriendReqStatusUpdate.getRecvUserId()), respEntity);
                     }
-                    channel.writeAndFlush(new RespEntity(MsgTypeEnum.FRIEND_STATUS_UPDATE, null));
+                    channel.writeAndFlush(respEntity);
                 });
     }
 
@@ -112,9 +113,9 @@ public class ChatService {
         InboundFriendDel inboundFriendDel = JsonUtil.parseObject(reqEntity.getContent(), InboundFriendDel.class);
         httpService.deleteFriend(reqEntity.getSendUserId(), inboundFriendDel.getFriendId(),
                 friendDelVO -> {
-                    ChannelGroupUtil.writeAndFlush(List.of(friendDelVO.getRecvUserId()),
-                            new RespEntity(MsgTypeEnum.FRIEND_DEL, null));
-                    channel.writeAndFlush(new RespEntity(MsgTypeEnum.FRIEND_DEL, null));
+                    RespEntity respEntity = new RespEntity(MsgTypeEnum.FRIEND_DEL, null);
+                    ChannelGroupUtil.writeAndFlush(List.of(friendDelVO.getRecvUserId()), respEntity);
+                    channel.writeAndFlush(respEntity);
                 });
     }
 
@@ -144,7 +145,10 @@ public class ChatService {
      * @param reqEntity
      */
     public void handleReqJoinGroup(Channel channel, ReqEntity reqEntity) {
-        // TODO
+        InboundGroupJoinReq inboundGroupJoinReq = JsonUtil.parseObject(reqEntity.getContent(), InboundGroupJoinReq.class);
+        httpService.addGroupJoinReq(reqEntity.getSendUserId(), inboundGroupJoinReq, groupJoinReqVO -> {
+            ChannelGroupUtil.writeAndFlush(groupJoinReqVO.getRecUserIds(), new RespEntity(MsgTypeEnum.REQ_JOIN_GROUP, null));
+        });
     }
 
     /**
@@ -152,7 +156,14 @@ public class ChatService {
      * @param channel
      */
     public void handleReqJoinGroupStatusUpdate(Channel channel, ReqEntity reqEntity) {
-        // TODO
+        InboundGroupJoinReqStatusUpdate inboundGroupJoinReqStatusUpdate = JsonUtil.parseObject(reqEntity.getContent(), InboundGroupJoinReqStatusUpdate.class);
+        httpService.updateGroupJoinReq(inboundGroupJoinReqStatusUpdate, groupJoinReqVO -> {
+            RespEntity respEntity = new RespEntity(MsgTypeEnum.REQ_JOIN_GROUP_STATUS_UPDATE, null);
+            if (REQ_AGREE_STATUS.equals(inboundGroupJoinReqStatusUpdate.getGroupJoinReqStatus())) {
+                ChannelGroupUtil.writeAndFlush(groupJoinReqVO.getRecUserIds(), respEntity);
+            }
+            channel.writeAndFlush(reqEntity);
+        });
     }
 
     /**
@@ -161,7 +172,10 @@ public class ChatService {
      * @param reqEntity
      */
     public void handleInviteJoinGroup(Channel channel, ReqEntity reqEntity) {
-        // TODO
+        InboundGroupInviteReq inboundGroupInviteReq = JsonUtil.parseObject(reqEntity.getContent(), InboundGroupInviteReq.class);
+        httpService.addGroupJoinInvite(reqEntity.getSendUserId(), inboundGroupInviteReq, groupJoinInviteVO -> {
+            ChannelGroupUtil.writeAndFlush(List.of(groupJoinInviteVO.getInviteUserId()), new RespEntity(MsgTypeEnum.INVITE_JOIN_GROUP, null));
+        });
     }
 
     /**
@@ -170,6 +184,11 @@ public class ChatService {
      * @param reqEntity
      */
     public void handleInviteJoinGroupStatusUpdate(Channel channel, ReqEntity reqEntity) {
-        // TODO
+        InboundGroupInviteReqStatusUpdate inboundGroupInviteReqStatusUpdate = JsonUtil.parseObject(reqEntity.getContent(), InboundGroupInviteReqStatusUpdate.class);
+        httpService.updateGroupJoinInvite(inboundGroupInviteReqStatusUpdate, groupJoinInviteVO -> {
+            RespEntity respEntity = new RespEntity(MsgTypeEnum.INVITE_JOIN_GROUP_STATUS_UPDATE, null);
+            ChannelGroupUtil.writeAndFlush(List.of(groupJoinInviteVO.getInviteUserId()), respEntity);
+            channel.writeAndFlush(respEntity);
+        });
     }
 }

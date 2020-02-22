@@ -1,10 +1,14 @@
 package cn.finull.mm.chat.service.http;
 
-import cn.finull.mm.chat.entity.req.InboundFriendReq;
-import cn.finull.mm.chat.entity.req.InboundPrivateMsg;
+import cn.finull.mm.chat.entity.req.*;
 import cn.finull.mm.chat.service.http.param.FriendReqParam;
+import cn.finull.mm.chat.service.http.param.GroupJoinInviteParam;
+import cn.finull.mm.chat.service.http.param.GroupJoinReqParam;
 import cn.finull.mm.chat.service.http.param.MsgParam;
 import cn.finull.mm.chat.service.http.vo.FriendDelVO;
+import cn.finull.mm.chat.service.http.vo.GroupJoinInviteVO;
+import cn.finull.mm.chat.service.http.vo.GroupJoinReqVO;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 
 import java.util.ArrayList;
@@ -64,12 +68,13 @@ public class HttpService {
 
     /**
      * 修改好友请求状态
-     * @param friendReqId
-     * @param friendReqStatus
+     * @param inboundFriendReqStatusUpdate
      * @param callback
      */
-    public void updateFriendReqStatus(Long friendReqId, String friendReqStatus, Callback callback) {
-        String url = String.format("/private/api/friend-reqs/%d?friendReqStatus=%s", friendReqId, friendReqStatus);
+    public void updateFriendReqStatus(InboundFriendReqStatusUpdate inboundFriendReqStatusUpdate, Callback callback) {
+        String url = String.format("/private/api/friend-reqs/%d?friendReqStatus=%s",
+                inboundFriendReqStatusUpdate.getFriendReqId(),
+                inboundFriendReqStatusUpdate.getFriendReqStatus());
         httpTemplate.patch(url, null, callback);
     }
 
@@ -92,5 +97,54 @@ public class HttpService {
     public void getUserIdsByGroupId(Long groupId, Consumer<List<String>> consumer) {
         String url = String.format("/private/api/%d/group-members", groupId);
         httpTemplate.get(url, CollUtil.newArrayList(), consumer);
+    }
+
+    /**
+     * 发送一个入群请求
+     * @param reqUserId
+     * @param inboundGroupJoinReq
+     * @param consumer
+     */
+    public void addGroupJoinReq(Long reqUserId, InboundGroupJoinReq inboundGroupJoinReq, Consumer<GroupJoinReqVO> consumer) {
+        GroupJoinReqParam groupJoinReqParam = new GroupJoinReqParam();
+        groupJoinReqParam.setReqUserId(reqUserId);
+        groupJoinReqParam.setGroupId(inboundGroupJoinReq.getGroupId());
+        groupJoinReqParam.setReqMsg(inboundGroupJoinReq.getMsg());
+        httpTemplate.post("/private/api/group-join-reqs", groupJoinReqParam, new GroupJoinReqVO(), consumer);
+    }
+
+    /**
+     * 修改请求入群状态
+     */
+    public void updateGroupJoinReq(InboundGroupJoinReqStatusUpdate inboundGroupJoinReqStatusUpdate, Consumer<GroupJoinReqVO> consumer) {
+        String url = String.format("/private/api/group-join-reqs/%d?groupJoinReqStatus=%s",
+                inboundGroupJoinReqStatusUpdate.getGroupJoinReqId(),
+                inboundGroupJoinReqStatusUpdate.getGroupJoinReqStatus());
+        httpTemplate.patch(url, null, new GroupJoinReqVO(), consumer);
+    }
+
+    /**
+     * 添加入群邀请
+     * @param reqUserId
+     * @param inboundGroupInviteReq
+     * @param consumer
+     */
+    public void addGroupJoinInvite(Long reqUserId, InboundGroupInviteReq inboundGroupInviteReq, Consumer<GroupJoinInviteVO> consumer) {
+        GroupJoinInviteParam groupJoinInviteParam = new GroupJoinInviteParam();
+        BeanUtil.copyProperties(inboundGroupInviteReq, groupJoinInviteParam);
+        groupJoinInviteParam.setReqUserId(reqUserId);
+        httpTemplate.post("/private/api/group-join-invites", groupJoinInviteParam, new GroupJoinInviteVO(), consumer);
+    }
+
+    /**
+     * 修改邀请入群状态
+     * @param inboundGroupInviteReqStatusUpdate
+     * @param consumer
+     */
+    public void updateGroupJoinInvite(InboundGroupInviteReqStatusUpdate inboundGroupInviteReqStatusUpdate, Consumer<GroupJoinInviteVO> consumer) {
+        String url = String.format("/private/api/group-join-invites/%d?groupJoinInviteStatus=%s",
+                inboundGroupInviteReqStatusUpdate.getGroupJoinInviteId(),
+                inboundGroupInviteReqStatusUpdate.getGroupJoinInviteStatus());
+        httpTemplate.patch(url, null, new GroupJoinInviteVO(), consumer);
     }
 }

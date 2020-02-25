@@ -1,0 +1,41 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: maven_package
+    image: maven:3.6.3-jdk-11
+    privileged: true
+    commands:
+      - mvn clean package -DskipTests -U
+    volumes:
+      - name: drone_maven_repository
+        path: /root/.m2/repository
+
+  - name: docker_run
+    image: docker:stable-dind
+    privileged: true
+    commands:
+      - if [ $(docker ps -a | grep 'mm-chat' | awk '{print $1}') ]; then docker rm -f mm-chat; fi
+      - if [ $(docker images | grep 'mm-chat' | awk '{print $3}') ]; then docker rmi mm-chat:v1; fi
+      - docker build -t mm-chat:v1 .
+      - docker run -dit -p 8888:8888 --name mm-chat mm-chat:v1
+      - docker ps -a | grep mm-chat:v1
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+
+volumes:
+  - name: drone_maven_repository
+    host:
+      path: /home/ubuntu/drone-maven-repository
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+
+trigger:
+  branch:
+    - master
+  event:
+    - push
+

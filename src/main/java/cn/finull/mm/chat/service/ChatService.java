@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Description
@@ -28,8 +27,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ChatService {
 
-    private static final String REQ_AGREE_STATUS = "2";
-
     private final HttpService httpService = HttpService.build();
 
     /**
@@ -39,7 +36,7 @@ public class ChatService {
      */
     public void handleConn(Channel channel, ReqEntity reqEntity) {
         ChannelGroupUtil.put(channel, reqEntity.getSendUserId());
-        log.info("用户[{}]连接到服务器，当前用户[{}]！", reqEntity.getSendUserId(), ChannelGroupUtil.channelSize());
+        log.info("用户[{}]连接到服务器，当前用户[{}]个！", reqEntity.getSendUserId(), ChannelGroupUtil.channelSize());
     }
 
     /**
@@ -76,47 +73,29 @@ public class ChatService {
     }
 
     /**
-     * 处理好友请求
+     * 好友请求通知
      * @param channel
      * @param reqEntity
      */
     public void handleFriendReq(Channel channel, ReqEntity reqEntity) {
-        InboundFriendReq inboundFriendReq = JsonUtil.parseObject(reqEntity.getContent(), InboundFriendReq.class);
-        httpService.addFriendReq(reqEntity.getSendUserId(), inboundFriendReq, () -> {
-            ChannelGroupUtil.writeAndFlush(List.of(inboundFriendReq.getRecvUserId()), new RespEntity(MsgTypeEnum.FRIEND_REQ, null));
-        });
+        InboundFriendReq inboundFriendReq = JsonUtil.parseObject(
+                reqEntity.getContent(), InboundFriendReq.class);
+        ChannelGroupUtil.writeAndFlush(
+                List.of(inboundFriendReq.getRecvUserId()),
+                new RespEntity(MsgTypeEnum.FRIEND_REQ_NOTICE, null));
     }
 
     /**
-     * 处理好友请求状态修改
+     * 处理删除好友通知
      * @param channel
      * @param reqEntity
      */
-    public void handleFriendReqUpdate(Channel channel, ReqEntity reqEntity) {
-        InboundFriendReqStatusUpdate inboundFriendReqStatusUpdate = JsonUtil.parseObject(reqEntity.getContent(), InboundFriendReqStatusUpdate.class);
-        httpService.updateFriendReqStatus(inboundFriendReqStatusUpdate,
-                () -> {
-                    RespEntity respEntity = new RespEntity(MsgTypeEnum.FRIEND_STATUS_UPDATE, null);
-                    if (REQ_AGREE_STATUS.equals(inboundFriendReqStatusUpdate.getFriendReqStatus())) {
-                        ChannelGroupUtil.writeAndFlush(List.of(inboundFriendReqStatusUpdate.getRecvUserId()), respEntity);
-                    }
-                    channel.writeAndFlush(respEntity);
-                });
-    }
-
-    /**
-     * 处理好友删除
-     * @param channel
-     * @param reqEntity
-     */
-    public void handleFriendDel(Channel channel, ReqEntity reqEntity) {
-        InboundFriendDel inboundFriendDel = JsonUtil.parseObject(reqEntity.getContent(), InboundFriendDel.class);
-        httpService.deleteFriend(reqEntity.getSendUserId(), inboundFriendDel.getFriendId(),
-                friendDelVO -> {
-                    RespEntity respEntity = new RespEntity(MsgTypeEnum.FRIEND_DEL, null);
-                    ChannelGroupUtil.writeAndFlush(List.of(friendDelVO.getRecvUserId()), respEntity);
-                    channel.writeAndFlush(respEntity);
-                });
+    public void handleDelFriend(Channel channel, ReqEntity reqEntity) {
+        InboundDelFriend inboundDelFriend = JsonUtil.parseObject(
+                reqEntity.getContent(), InboundDelFriend.class);
+        ChannelGroupUtil.writeAndFlush(
+                List.of(inboundDelFriend.getRecvUserId()),
+                new RespEntity(MsgTypeEnum.DEL_FRIEND_NOTICE, null));
     }
 
     /**
@@ -125,70 +104,70 @@ public class ChatService {
      * @param reqEntity
      */
     public void handleGroupChat(Channel channel, ReqEntity reqEntity) {
-        InboundGroupMsg inboundGroupMsg = JsonUtil.parseObject(reqEntity.getContent(), InboundGroupMsg.class);
-        httpService.getUserIdsByGroupId(inboundGroupMsg.getGroupId(), users -> {
-            List<Long> userIds = users.parallelStream().map(Long::valueOf).collect(Collectors.toList());
+        InboundGroupMsg inboundGroupMsg = JsonUtil.parseObject(
+                reqEntity.getContent(), InboundGroupMsg.class);
 
-            OutboundGroupMsg outboundGroupMsg = new OutboundGroupMsg();
-            BeanUtil.copyProperties(inboundGroupMsg, outboundGroupMsg);
-            outboundGroupMsg.setSendUserId(reqEntity.getSendUserId());
-            outboundGroupMsg.setCreateTime(new Date());
+        OutboundGroupMsg outboundGroupMsg = new OutboundGroupMsg();
+        // groupId, sendGroupMemberId, msg, addition
+        BeanUtil.copyProperties(inboundGroupMsg, outboundGroupMsg);
+        outboundGroupMsg.setCreateTime(new Date());
 
-            ChannelGroupUtil.writeAndFlush(userIds,
-                    new RespEntity(MsgTypeEnum.GROUP_CHAT, JsonUtil.toJSONString(outboundGroupMsg)));
-        });
+        // 不给自己发
+        inboundGroupMsg.getRecvUserIds().removeIf(reqEntity.getSendUserId()::equals);
+
+        ChannelGroupUtil.writeAndFlush(inboundGroupMsg.getRecvUserIds(),
+                new RespEntity(MsgTypeEnum.GROUP_CHAT, JsonUtil.toJSONString(outboundGroupMsg)));
     }
 
     /**
-     * 处理入群请求
+     * 处理入群请求通知
      * @param channel
      * @param reqEntity
      */
     public void handleReqJoinGroup(Channel channel, ReqEntity reqEntity) {
-        InboundGroupJoinReq inboundGroupJoinReq = JsonUtil.parseObject(reqEntity.getContent(), InboundGroupJoinReq.class);
-        httpService.addGroupJoinReq(reqEntity.getSendUserId(), inboundGroupJoinReq, groupJoinReqVO -> {
-            ChannelGroupUtil.writeAndFlush(groupJoinReqVO.getRecUserIds(), new RespEntity(MsgTypeEnum.REQ_JOIN_GROUP, null));
-        });
+        InboundGroupJoinReq inboundGroupJoinReq = JsonUtil.parseObject(
+                reqEntity.getContent(), InboundGroupJoinReq.class);
+        ChannelGroupUtil.writeAndFlush(
+                inboundGroupJoinReq.getRecvUserIds(),
+                new RespEntity(MsgTypeEnum.REQ_JOIN_GROUP_NOTICE, null));
     }
 
     /**
-     * 入群请求状态修改
-     * @param channel
-     */
-    public void handleReqJoinGroupStatusUpdate(Channel channel, ReqEntity reqEntity) {
-        InboundGroupJoinReqStatusUpdate inboundGroupJoinReqStatusUpdate = JsonUtil.parseObject(reqEntity.getContent(), InboundGroupJoinReqStatusUpdate.class);
-        httpService.updateGroupJoinReq(inboundGroupJoinReqStatusUpdate, groupJoinReqVO -> {
-            RespEntity respEntity = new RespEntity(MsgTypeEnum.REQ_JOIN_GROUP_STATUS_UPDATE, null);
-            if (REQ_AGREE_STATUS.equals(inboundGroupJoinReqStatusUpdate.getGroupJoinReqStatus())) {
-                ChannelGroupUtil.writeAndFlush(groupJoinReqVO.getRecUserIds(), respEntity);
-            }
-            channel.writeAndFlush(reqEntity);
-        });
-    }
-
-    /**
-     * 处理群加入邀请
+     * 处理入群邀请通知
      * @param channel
      * @param reqEntity
      */
     public void handleInviteJoinGroup(Channel channel, ReqEntity reqEntity) {
-        InboundGroupInviteReq inboundGroupInviteReq = JsonUtil.parseObject(reqEntity.getContent(), InboundGroupInviteReq.class);
-        httpService.addGroupJoinInvite(reqEntity.getSendUserId(), inboundGroupInviteReq, groupJoinInviteVO -> {
-            ChannelGroupUtil.writeAndFlush(List.of(groupJoinInviteVO.getInviteUserId()), new RespEntity(MsgTypeEnum.INVITE_JOIN_GROUP, null));
-        });
+        InboundGroupInviteReq inboundGroupInviteReq = JsonUtil.parseObject(
+                reqEntity.getContent(), InboundGroupInviteReq.class);
+        ChannelGroupUtil.writeAndFlush(
+                List.of(inboundGroupInviteReq.getInviteUserId()),
+                new RespEntity(MsgTypeEnum.INVITE_JOIN_GROUP_NOTICE, null));
     }
 
     /**
-     * 入群邀请状态修改
+     * 处理删除群成员通知
      * @param channel
      * @param reqEntity
      */
-    public void handleInviteJoinGroupStatusUpdate(Channel channel, ReqEntity reqEntity) {
-        InboundGroupInviteReqStatusUpdate inboundGroupInviteReqStatusUpdate = JsonUtil.parseObject(reqEntity.getContent(), InboundGroupInviteReqStatusUpdate.class);
-        httpService.updateGroupJoinInvite(inboundGroupInviteReqStatusUpdate, groupJoinInviteVO -> {
-            RespEntity respEntity = new RespEntity(MsgTypeEnum.INVITE_JOIN_GROUP_STATUS_UPDATE, null);
-            ChannelGroupUtil.writeAndFlush(List.of(groupJoinInviteVO.getInviteUserId()), respEntity);
-            channel.writeAndFlush(respEntity);
-        });
+    public void handleDelGroupMember(Channel channel, ReqEntity reqEntity) {
+        InboundDelGroupMember inboundDelGroupMember = JsonUtil.parseObject(
+                reqEntity.getContent(), InboundDelGroupMember.class);
+        ChannelGroupUtil.writeAndFlush(
+                List.of(inboundDelGroupMember.getRecvUserId()),
+                new RespEntity(MsgTypeEnum.DEL_GROUP_MEMBER_NOTICE, null));
+    }
+
+    /**
+     * 处理删除群通知
+     * @param channel
+     * @param reqEntity
+     */
+    public void handleDelGroup(Channel channel, ReqEntity reqEntity) {
+        InboundDelGroup inboundDelGroup = JsonUtil.parseObject(
+                reqEntity.getContent(), InboundDelGroup.class);
+        ChannelGroupUtil.writeAndFlush(
+                inboundDelGroup.getRecvUserIds(),
+                new RespEntity(MsgTypeEnum.DEL_GROUP_NOTICE, null));
     }
 }

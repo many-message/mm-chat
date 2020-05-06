@@ -29,7 +29,7 @@ public class HandlerInitializer extends ChannelInitializer<SocketChannel> {
     /**
      * 心跳检测的时间
      */
-    private static final int IDLE_STATE_TIME = 1;
+    private static final int IDLE_STATE_TIME = 3;
     /**
      * websocket协议的前缀
      */
@@ -45,7 +45,7 @@ public class HandlerInitializer extends ChannelInitializer<SocketChannel> {
                 .addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH))
                 // 自定义消息格式编解码器
                 .addLast(new ChatMessageCodec())
-                // 心跳检测时间为1分钟
+                // 心跳检测时间为3分钟
                 .addLast(new IdleStateHandler(IDLE_STATE_TIME, IDLE_STATE_TIME, IDLE_STATE_TIME, TimeUnit.MINUTES))
                 // 聊天处理器
                 .addLast(new ChatHandler());

@@ -1,4 +1,4 @@
-package cn.finull.mm.chat.service.http.vo;
+package cn.finull.mm.chat.entity.req;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,11 +12,11 @@ import java.util.List;
  * Copyright (C) HPE, All rights reserved.
  *
  * @author Ma, Chenxi
- * @date 2020-02-22 11:19
+ * @date 2020-05-06 23:34
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupJoinReqVO {
-    private List<Long> recUserIds;
+public class InboundDelGroup {
+    private List<Long> recvUserIds;
 }

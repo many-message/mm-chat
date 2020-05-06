@@ -1,4 +1,4 @@
-package cn.finull.mm.chat.service.http.vo;
+package cn.finull.mm.chat.service.http.param;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,11 +10,14 @@ import lombok.NoArgsConstructor;
  * Copyright (C) HPE, All rights reserved.
  *
  * @author Ma, Chenxi
- * @date 2020-02-22 11:49
+ * @date 2020-02-19 21:50
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupJoinInviteVO {
-    private Long inviteUserId;
+public class MsgAddParam {
+    private Long sendUserId;
+    private Long recvUserId;
+    private String msgContent;
+    private String msgAddition;
 }

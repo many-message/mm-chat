@@ -16,6 +16,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InboundGroupInviteReq {
-    private Long groupId;
     private Long inviteUserId;
 }

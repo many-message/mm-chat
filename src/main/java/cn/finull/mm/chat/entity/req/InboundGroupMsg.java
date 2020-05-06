@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * Description
  * <p> 群聊消息
@@ -24,6 +26,10 @@ public class InboundGroupMsg {
      * 发送消息的成员id
      */
     private Long sendGroupMemberId;
+    /**
+     * 接收者
+     */
+    private List<Long> recvUserIds;
     /**
      * 消息
      * len:255

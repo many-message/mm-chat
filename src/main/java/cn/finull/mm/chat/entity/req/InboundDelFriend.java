@@ -6,19 +6,18 @@ import lombok.NoArgsConstructor;
 
 /**
  * Description
- * <p>
+ * <p> 好友删除请求
  * Copyright (C) HPE, All rights reserved.
  *
  * @author Ma, Chenxi
- * @date 2020-02-22 11:55
+ * @date 2020-02-19 23:29
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class InboundGroupInviteReqStatusUpdate {
-    private Long groupJoinInviteId;
+public class InboundDelFriend {
     /**
-     * 1-邀请中；2-同意；3-忽略
+     * 接收者ID
      */
-    private String groupJoinInviteStatus;
+    private Long recvUserId;
 }

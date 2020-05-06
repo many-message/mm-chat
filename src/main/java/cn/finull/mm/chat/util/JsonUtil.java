@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
@@ -28,12 +30,19 @@ public final class JsonUtil {
 
     static {
         mapper = new ObjectMapper();
+
         // 设置时间格式转换
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
         // 忽略无法转换的对象
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         // 如果存在未知属性，则忽略不报错
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        // Long 序列化为String
+        SimpleModule ltm = new SimpleModule();
+        ltm.addSerializer(Long.class, ToStringSerializer.instance);
+        ltm.addSerializer(Long.TYPE, ToStringSerializer.instance);
+        mapper.registerModule(ltm);
     }
 
     private JsonUtil() {}

@@ -68,7 +68,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<ReqEntity> {
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         Long userId = ChannelGroupUtil.remove(ctx.channel());
-        log.info("用户[{}]断开连接，剩余用户[{}]！", userId, ChannelGroupUtil.channelSize());
+        log.info("用户[{}]断开连接，剩余用户[{}]个！", userId, ChannelGroupUtil.channelSize());
     }
 
     /**

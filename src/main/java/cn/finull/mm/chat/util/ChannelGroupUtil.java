@@ -7,6 +7,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -66,7 +67,10 @@ public final class ChannelGroupUtil {
      * @param respEntity
      */
     public static void writeAndFlush(List<Long> recvUserIds, RespEntity respEntity) {
-        Set<Channel> recvChannels = recvUserIds.parallelStream().map(ID_CHANNELS::get).collect(Collectors.toSet());
+        Set<Channel> recvChannels = recvUserIds.parallelStream()
+                .map(ID_CHANNELS::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
         CHANNELS.writeAndFlush(respEntity, recvChannels::contains);
     }
 

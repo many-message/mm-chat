@@ -19,7 +19,6 @@ import java.util.Date;
 @NoArgsConstructor
 public class OutboundGroupMsg {
     private Long groupId;
-    private Long sendUserId;
     private Long sendGroupMemberId;
     private String msg;
     private String addition;

@@ -1,18 +1,15 @@
 package cn.finull.mm.chat.service.http;
 
-import cn.finull.mm.chat.config.HttpConfig;
 import cn.finull.mm.chat.util.JsonUtil;
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -35,36 +32,72 @@ public class HttpTemplate {
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String APPLICATION_JSON = "application/json;charset=UTF-8";
 
-    public static HttpTemplate build() {
-        return Build.HTTP_SERVICE;
+    private static final String OK = "200";
+    private static final String CODE= "code";
+    private static final String MESSAGE = "message";
+    private static final String DATA = "data";
+
+    public static HttpTemplate build(String rootUri) {
+        return Build.HTTP_SERVICE.setRootUri(rootUri);
     }
 
     private static class Build {
         private static final HttpTemplate HTTP_SERVICE = new HttpTemplate();
     }
 
+    private String rootUri;
+
+    public HttpTemplate setRootUri(String rootUri) {
+        this.rootUri = rootUri;
+        return this;
+    }
+
     /**
      * 异步调用get请求
      * @param url api地址
-     * @param t 响应实体对象，请求成功后，响应数据将会被注入到这个对象中
+     * @param respClz
      * @param consumer 消费响应数据
      * @param <T> 响应实体类型
      */
-    public <T> void get(String url, T t, Consumer<T> consumer) {
+    public <T> void getForObject(String url, Class<T> respClz, Consumer<T> consumer) {
         HttpRequest request = HttpRequest.newBuilder(createUri(url)).build();
-        sendAsync(request, t, consumer);
+        sendAsyncForObject(request, respClz, consumer);
+    }
+
+    /**
+     * 异步调用get请求
+     * @param url api地址
+     * @param respClz
+     * @param consumer 消费响应数据
+     * @param <T> 响应实体类型
+     */
+    public <T> void getForArray(String url, Class<T> respClz, Consumer<List<T>> consumer) {
+        HttpRequest request = HttpRequest.newBuilder(createUri(url)).build();
+        sendAsyncForArray(request, respClz, consumer);
     }
 
     /**
      * post请求
      * @param url
-     * @param req 请求体
-     * @param t
+     * @param req
+     * @param respClz
      * @param consumer
      * @param <T>
      */
-    public <T> void post(String url, Object req, T t, Consumer<T> consumer) {
-        sendAsync(buildPostRequest(url, req), t, consumer);
+    public <T> void postForObject(String url, Object req, Class<T> respClz, Consumer<T> consumer) {
+        sendAsyncForObject(buildPostRequest(url, req), respClz, consumer);
+    }
+
+    /**
+     * post请求
+     * @param url
+     * @param req
+     * @param respClz
+     * @param consumer
+     * @param <T>
+     */
+    public <T> void postForArray(String url, Object req, Class<T> respClz, Consumer<List<T>> consumer) {
+        sendAsyncForArray(buildPostRequest(url, req), respClz, consumer);
     }
 
     /**
@@ -88,13 +121,25 @@ public class HttpTemplate {
     /**
      * put请求
      * @param url
-     * @param req 请求体
-     * @param t
+     * @param req
+     * @param respClz
      * @param consumer
      * @param <T>
      */
-    public <T> void put(String url, Object req, T t, Consumer<T> consumer) {
-        sendAsync(buildPutRequest(url, req), t, consumer);
+    public <T> void putForObject(String url, Object req, Class<T> respClz, Consumer<T> consumer) {
+        sendAsyncForObject(buildPutRequest(url, req), respClz, consumer);
+    }
+
+    /**
+     * put请求
+     * @param url
+     * @param req
+     * @param respClz
+     * @param consumer
+     * @param <T>
+     */
+    public <T> void putForArray(String url, Object req, Class<T> respClz, Consumer<List<T>> consumer) {
+        sendAsyncForArray(buildPutRequest(url, req), respClz, consumer);
     }
 
     /**
@@ -116,15 +161,27 @@ public class HttpTemplate {
     }
 
     /**
-     * ignore
+     * patch请求
      * @param url
      * @param req
-     * @param t
+     * @param respClz
      * @param consumer
      * @param <T>
      */
-    public <T> void patch(String url, Object req, T t, Consumer<T> consumer) {
-        sendAsync(buildPatchRequest(url, req), t, consumer);
+    public <T> void patchForObject(String url, Object req, Class<T> respClz, Consumer<T> consumer) {
+        sendAsyncForObject(buildPatchRequest(url, req), respClz, consumer);
+    }
+
+    /**
+     * patch请求
+     * @param url
+     * @param req
+     * @param respClz
+     * @param consumer
+     * @param <T>
+     */
+    public <T> void patchForArray(String url, Object req, Class<T> respClz, Consumer<List<T>> consumer) {
+        sendAsyncForArray(buildPatchRequest(url, req), respClz, consumer);
     }
 
     /**
@@ -146,14 +203,25 @@ public class HttpTemplate {
     }
 
     /**
-     * ignore
+     * delete请求
      * @param url
-     * @param t
+     * @param respClz
      * @param consumer
      * @param <T>
      */
-    public <T> void delete(String url, T t, Consumer<T> consumer) {
-        sendAsync(buildDeleteRequest(url), t, consumer);
+    public <T> void deleteForObject(String url, Class<T> respClz, Consumer<T> consumer) {
+        sendAsyncForObject(buildDeleteRequest(url), respClz, consumer);
+    }
+
+    /**
+     * delete请求
+     * @param url
+     * @param respClz
+     * @param consumer
+     * @param <T>
+     */
+    public <T> void deleteForArray(String url, Class<T> respClz, Consumer<List<T>> consumer) {
+        sendAsyncForArray(buildDeleteRequest(url), respClz, consumer);
     }
 
     /**
@@ -171,49 +239,49 @@ public class HttpTemplate {
     }
 
     private URI createUri(String url) {
-        return URI.create(HttpConfig.ROOT_URI + url);
+        return URI.create(rootUri + url);
     }
 
-    private <T> void sendAsync(HttpRequest request, T t, Consumer<T> consumer) {
+    private <T> void sendAsyncForObject(HttpRequest request, Class<T> clz, Consumer<T> consumer) {
         sendAsync(request)
-                .thenAccept(resp -> {
-                    if (resp.isSuccess()) {
-                        if (t != null) {
-                            BeanUtil.copyProperties(resp.getData(), t);
-                        }
-                        consumer.accept(t);
+                .thenAccept(content -> {
+                    JsonNode jsonNode = JsonUtil.parseObject(content);
+                    if (OK.equals(jsonNode.get(CODE).toString())) {
+                        String data = jsonNode.get(DATA).toString();
+                        consumer.accept(JsonUtil.parseObject(data, clz));
+                        return;
                     }
-                    log.error("Http 远程调用错误 -- {}！", resp.getMessage());
-                })
-                .join();
+                    log.error("Http 远程调用错误 -- {}！", jsonNode.get(MESSAGE).toString());
+                });
+    }
+
+    private <T> void sendAsyncForArray(HttpRequest request, Class<T> clz, Consumer<List<T>> consumer) {
+        sendAsync(request)
+                .thenAccept(content -> {
+                    JsonNode jsonNode = JsonUtil.parseObject(content);
+                    if (OK.equals(jsonNode.get(CODE).toString())) {
+                        String data = jsonNode.get(DATA).toString();
+                        consumer.accept(JsonUtil.parseArray(data, clz));
+                        return;
+                    }
+                    log.error("Http 远程调用错误 -- {}！", jsonNode.get(MESSAGE).toString());
+                });
     }
 
     private <T> void sendAsync(HttpRequest request, Callback callback) {
         sendAsync(request)
-                .thenAccept(resp -> {
-                    if (resp.isSuccess()) {
+                .thenAccept(content -> {
+                    JsonNode jsonNode = JsonUtil.parseObject(content);
+                    if (OK.equals(jsonNode.get(CODE).toString())) {
                         callback.accept();
+                        return;
                     }
-                    log.error("Http 远程调用错误 -- {}！", resp.getMessage());
-                })
-                .join();
+                    log.error("Http 远程调用错误 -- {}！", jsonNode.get(MESSAGE).toString());
+                });
     }
 
-    private CompletableFuture<Resp> sendAsync(HttpRequest request) {
+    private CompletableFuture<String> sendAsync(HttpRequest request) {
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::body)
-                .thenApply(body -> JsonUtil.parseObject(body, Resp.class));
-    }
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    private static class Resp<T> {
-        private String code;
-        private String message;
-        private T data;
-        public boolean isSuccess() {
-            return "00".equals(code);
-        }
+                .thenApply(HttpResponse::body);
     }
 }

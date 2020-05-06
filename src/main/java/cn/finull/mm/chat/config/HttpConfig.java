@@ -15,5 +15,5 @@ public final class HttpConfig {
     /**
      * http请求的根路径
      */
-    public static final String ROOT_URI = "http://localhost:8080";
+    public static final String ROOT_URI = "http://localhost:9494";
 }

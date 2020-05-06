@@ -20,8 +20,4 @@ public class InboundFriendReq {
      * 接收者用户id
      */
     private Long recvUserId;
-    /**
-     * 请求消息
-     */
-    private String msg;
 }

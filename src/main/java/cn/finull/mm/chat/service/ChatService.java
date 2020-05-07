@@ -46,6 +46,7 @@ public class ChatService {
      */
     public void handleIdle(Channel channel, ReqEntity reqEntity) {
         RespEntity respEntity = new RespEntity();
+        ChannelGroupUtil.put(channel, reqEntity.getSendUserId());
         BeanUtil.copyProperties(reqEntity, respEntity);
         channel.writeAndFlush(respEntity);
     }
@@ -141,7 +142,7 @@ public class ChatService {
         InboundGroupInviteReq inboundGroupInviteReq = JsonUtil.parseObject(
                 reqEntity.getContent(), InboundGroupInviteReq.class);
         ChannelGroupUtil.writeAndFlush(
-                List.of(inboundGroupInviteReq.getInviteUserId()),
+                inboundGroupInviteReq.getInviteUserIds(),
                 new RespEntity(MsgTypeEnum.INVITE_JOIN_GROUP_NOTICE, null));
     }
 
@@ -166,6 +167,10 @@ public class ChatService {
     public void handleDelGroup(Channel channel, ReqEntity reqEntity) {
         InboundDelGroup inboundDelGroup = JsonUtil.parseObject(
                 reqEntity.getContent(), InboundDelGroup.class);
+
+        // 不给自己发
+        inboundDelGroup.getRecvUserIds().removeIf(reqEntity.getSendUserId()::equals);
+
         ChannelGroupUtil.writeAndFlush(
                 inboundDelGroup.getRecvUserIds(),
                 new RespEntity(MsgTypeEnum.DEL_GROUP_NOTICE, null));

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * Description
  * <p>
@@ -16,5 +18,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InboundGroupInviteReq {
-    private Long inviteUserId;
+    private List<Long> inviteUserIds;
 }

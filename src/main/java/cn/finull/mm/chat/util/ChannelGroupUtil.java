@@ -1,6 +1,7 @@
 package cn.finull.mm.chat.util;
 
 import cn.finull.mm.chat.entity.RespEntity;
+import cn.hutool.core.util.ObjectUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -44,8 +45,12 @@ public final class ChannelGroupUtil {
      * @param userId
      */
     public static void put(Channel channel, Long userId) {
-        CHANNEL_IDS.put(channel, userId);
-        ID_CHANNELS.put(userId, channel);
+        if (ObjectUtil.notEqual(userId, CHANNEL_IDS.get(channel))) {
+            CHANNEL_IDS.put(channel, userId);
+        }
+        if (ObjectUtil.notEqual(channel, ID_CHANNELS.get(userId))) {
+            ID_CHANNELS.put(userId, channel);
+        }
     }
 
     /**

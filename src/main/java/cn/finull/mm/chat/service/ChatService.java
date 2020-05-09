@@ -67,10 +67,9 @@ public class ChatService {
             // 向指定用户发送消息
             ChannelGroupUtil.writeAndFlush(List.of(inboundPrivateMsg.getRecvUserId()),
                     new RespEntity(MsgTypeEnum.PRIVATE_CHAT, JsonUtil.toJSONString(outboundPrivateMsg)));
-        } else {
-            // 接收用户不在线
-            httpService.addMsg(reqEntity.getSendUserId(), inboundPrivateMsg, () -> { });
         }
+        // 异步添加一条消息
+        httpService.addMsg(reqEntity.getSendUserId(), inboundPrivateMsg, () -> { });
     }
 
     /**
@@ -109,8 +108,9 @@ public class ChatService {
                 reqEntity.getContent(), InboundGroupMsg.class);
 
         OutboundGroupMsg outboundGroupMsg = new OutboundGroupMsg();
-        // groupId, sendGroupMemberId, msg, addition
+        // groupId, sendGroupMemberId, groupMemberName, nickname, msg, addition
         BeanUtil.copyProperties(inboundGroupMsg, outboundGroupMsg);
+        outboundGroupMsg.setSendUserId(reqEntity.getSendUserId());
         outboundGroupMsg.setCreateTime(new Date());
 
         // 不给自己发

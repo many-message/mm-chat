@@ -27,6 +27,14 @@ public class InboundGroupMsg {
      */
     private Long sendGroupMemberId;
     /**
+     * 群备注
+     */
+    private String groupMemberName;
+    /**
+     * 昵称
+     */
+    private String nickname;
+    /**
      * 接收者
      */
     private List<Long> recvUserIds;

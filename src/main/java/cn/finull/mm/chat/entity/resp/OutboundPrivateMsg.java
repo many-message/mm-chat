@@ -26,12 +26,12 @@ public class OutboundPrivateMsg {
      * 消息正文
      * len:255
      */
-    private String msg;
+    private String msgContent;
     /**
      * 消息附加值
      * len:255
      */
-    private String addition;
+    private String msgAddition;
     /**
      * 发送时间
      */

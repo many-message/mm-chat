@@ -1,29 +1,24 @@
-package cn.finull.mm.chat.entity.resp;
+package cn.finull.mm.chat.service.http.param;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-
 /**
  * Description
- * <p> 群聊消息
+ * <p>
  * Copyright (C) HPE, All rights reserved.
  *
  * @author Ma, Chenxi
- * @date 2020-02-20 0:11
+ * @date 2020-05-10 18:25
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OutboundGroupMsg {
+public class GroupMsgAddParam {
     private Long groupId;
-    private Long sendUserId;
     private Long sendGroupMemberId;
-    private String groupMemberName;
-    private String nickname;
+    private Long sendUserId;
     private String msgContent;
     private String msgAddition;
-    private Date createTime;
 }

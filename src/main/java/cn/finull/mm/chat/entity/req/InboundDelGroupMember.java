@@ -16,5 +16,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InboundDelGroupMember {
+
     private Long recvUserId;
+
+    private Long groupId;
+
+    private String nickname;
+
+    private String groupName;
 }

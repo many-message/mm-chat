@@ -42,10 +42,10 @@ public class InboundGroupMsg {
      * 消息
      * len:255
      */
-    private String msg;
+    private String msgContent;
     /**
      * 附加消息
      * len:255
      */
-    private String addition;
+    private String msgAddition;
 }

@@ -20,4 +20,6 @@ public class InboundDelFriend {
      * 接收者ID
      */
     private Long recvUserId;
+
+    private String nickname;
 }

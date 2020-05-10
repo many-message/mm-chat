@@ -1,4 +1,4 @@
-package cn.finull.mm.chat.entity.req;
+package cn.finull.mm.chat.entity.resp;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -6,20 +6,16 @@ import lombok.NoArgsConstructor;
 
 /**
  * Description
- * <p> 好友请求消息
+ * <p>
  * Copyright (C) HPE, All rights reserved.
  *
  * @author Ma, Chenxi
- * @date 2020-02-19 22:13
+ * @date 2020-05-10 10:46
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class InboundFriendReq {
-    /**
-     * 接收者用户id
-     */
-    private Long recvUserId;
-
+public class OutboundDelFriend {
+    private Long sendUserId;
     private String nickname;
 }

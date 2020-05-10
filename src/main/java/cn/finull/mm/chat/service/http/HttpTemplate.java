@@ -252,32 +252,32 @@ public class HttpTemplate {
                         return;
                     }
                     log.error("Http 远程调用错误 -- {}！", jsonNode.get(MESSAGE).toString());
-                });
+                }).join();
     }
 
     private <T> void sendAsyncForArray(HttpRequest request, Class<T> clz, Consumer<List<T>> consumer) {
         sendAsync(request)
                 .thenAccept(content -> {
                     JsonNode jsonNode = JsonUtil.parseObject(content);
-                    if (OK.equals(jsonNode.get(CODE).toString())) {
+                    if (OK.equals(jsonNode.get(CODE).asText())) {
                         String data = jsonNode.get(DATA).toString();
                         consumer.accept(JsonUtil.parseArray(data, clz));
                         return;
                     }
                     log.error("Http 远程调用错误 -- {}！", jsonNode.get(MESSAGE).toString());
-                });
+                }).join();
     }
 
     private <T> void sendAsync(HttpRequest request, Callback callback) {
         sendAsync(request)
                 .thenAccept(content -> {
                     JsonNode jsonNode = JsonUtil.parseObject(content);
-                    if (OK.equals(jsonNode.get(CODE).toString())) {
+                    if (OK.equals(jsonNode.get(CODE).asText())) {
                         callback.accept();
                         return;
                     }
                     log.error("Http 远程调用错误 -- {}！", jsonNode.get(MESSAGE).toString());
-                });
+                }).join();
     }
 
     private CompletableFuture<String> sendAsync(HttpRequest request) {

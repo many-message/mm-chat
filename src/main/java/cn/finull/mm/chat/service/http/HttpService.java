@@ -2,6 +2,7 @@ package cn.finull.mm.chat.service.http;
 
 import cn.finull.mm.chat.config.HttpConfig;
 import cn.finull.mm.chat.entity.req.*;
+import cn.finull.mm.chat.service.http.param.GroupMsgAddParam;
 import cn.finull.mm.chat.service.http.param.MsgAddParam;
 
 /**
@@ -36,8 +37,24 @@ public class HttpService {
         MsgAddParam msgAddParam = new MsgAddParam();
         msgAddParam.setSendUserId(sendUserId);
         msgAddParam.setRecvUserId(inboundPrivateMsg.getRecvUserId());
-        msgAddParam.setMsgContent(inboundPrivateMsg.getMsg());
-        msgAddParam.setMsgAddition(inboundPrivateMsg.getAddition());
-        httpTemplate.post("/private/api/message", msgAddParam, callback);
+        msgAddParam.setMsgContent(inboundPrivateMsg.getMsgContent());
+        msgAddParam.setMsgAddition(inboundPrivateMsg.getMsgAddition());
+        httpTemplate.post("/private/api/messages", msgAddParam, callback);
+    }
+
+    /**
+     * 添加一条群聊消息
+     * @param sendUserId
+     * @param inboundGroupMsg
+     * @param callback
+     */
+    public void addGroupMsg(Long sendUserId, InboundGroupMsg inboundGroupMsg, Callback callback) {
+        GroupMsgAddParam param = new GroupMsgAddParam();
+        param.setGroupId(inboundGroupMsg.getGroupId());
+        param.setSendGroupMemberId(inboundGroupMsg.getSendGroupMemberId());
+        param.setSendUserId(sendUserId);
+        param.setMsgContent(inboundGroupMsg.getMsgContent());
+        param.setMsgAddition(inboundGroupMsg.getMsgAddition());
+        httpTemplate.post("/private/api/groups/messages", param, callback);
     }
 }

@@ -18,5 +18,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InboundGroupInviteReq {
+
     private List<Long> inviteUserIds;
+
+    private String nickname;
+
+    private String groupName;
 }

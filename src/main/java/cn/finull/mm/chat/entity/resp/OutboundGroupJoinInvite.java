@@ -1,10 +1,8 @@
-package cn.finull.mm.chat.entity.req;
+package cn.finull.mm.chat.entity.resp;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 /**
  * Description
@@ -12,22 +10,14 @@ import java.util.List;
  * Copyright (C) HPE, All rights reserved.
  *
  * @author Ma, Chenxi
- * @date 2020-05-06 23:34
+ * @date 2020-05-10 11:07
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class InboundDelGroup {
+public class OutboundGroupJoinInvite {
 
-    private List<Long> recvUserIds;
-
-    private Long groupId;
-    /**
-     * 群主
-     */
     private String nickname;
-    /**
-     * 群聊名
-     */
+
     private String groupName;
 }

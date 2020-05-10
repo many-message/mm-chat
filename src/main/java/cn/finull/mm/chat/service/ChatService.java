@@ -4,8 +4,7 @@ import cn.finull.mm.chat.entity.ReqEntity;
 import cn.finull.mm.chat.entity.RespEntity;
 import cn.finull.mm.chat.entity.enums.MsgTypeEnum;
 import cn.finull.mm.chat.entity.req.*;
-import cn.finull.mm.chat.entity.resp.OutboundGroupMsg;
-import cn.finull.mm.chat.entity.resp.OutboundPrivateMsg;
+import cn.finull.mm.chat.entity.resp.*;
 import cn.finull.mm.chat.service.http.HttpService;
 import cn.finull.mm.chat.util.ChannelGroupUtil;
 import cn.finull.mm.chat.util.JsonUtil;
@@ -80,9 +79,12 @@ public class ChatService {
     public void handleFriendReq(Channel channel, ReqEntity reqEntity) {
         InboundFriendReq inboundFriendReq = JsonUtil.parseObject(
                 reqEntity.getContent(), InboundFriendReq.class);
+
+        OutboundFriendReq outboundFriendReq = new OutboundFriendReq(inboundFriendReq.getNickname());
+
         ChannelGroupUtil.writeAndFlush(
                 List.of(inboundFriendReq.getRecvUserId()),
-                new RespEntity(MsgTypeEnum.FRIEND_REQ_NOTICE, null));
+                new RespEntity(MsgTypeEnum.FRIEND_REQ_NOTICE, JsonUtil.toJSONString(outboundFriendReq)));
     }
 
     /**
@@ -93,9 +95,14 @@ public class ChatService {
     public void handleDelFriend(Channel channel, ReqEntity reqEntity) {
         InboundDelFriend inboundDelFriend = JsonUtil.parseObject(
                 reqEntity.getContent(), InboundDelFriend.class);
+
+        OutboundDelFriend outboundDelFriend = new OutboundDelFriend(
+                reqEntity.getSendUserId(), inboundDelFriend.getNickname());
+
         ChannelGroupUtil.writeAndFlush(
                 List.of(inboundDelFriend.getRecvUserId()),
-                new RespEntity(MsgTypeEnum.DEL_FRIEND_NOTICE, null));
+                new RespEntity(MsgTypeEnum.DEL_FRIEND_NOTICE, JsonUtil.toJSONString(outboundDelFriend))
+        );
     }
 
     /**
@@ -118,6 +125,9 @@ public class ChatService {
 
         ChannelGroupUtil.writeAndFlush(inboundGroupMsg.getRecvUserIds(),
                 new RespEntity(MsgTypeEnum.GROUP_CHAT, JsonUtil.toJSONString(outboundGroupMsg)));
+
+        // 存数据库
+        httpService.addGroupMsg(reqEntity.getSendUserId(), inboundGroupMsg, () -> {});
     }
 
     /**
@@ -128,9 +138,13 @@ public class ChatService {
     public void handleReqJoinGroup(Channel channel, ReqEntity reqEntity) {
         InboundGroupJoinReq inboundGroupJoinReq = JsonUtil.parseObject(
                 reqEntity.getContent(), InboundGroupJoinReq.class);
+
+        OutboundGroupJoinReq outboundGroupJoinReq = new OutboundGroupJoinReq();
+        BeanUtil.copyProperties(inboundGroupJoinReq, outboundGroupJoinReq);
+
         ChannelGroupUtil.writeAndFlush(
                 inboundGroupJoinReq.getRecvUserIds(),
-                new RespEntity(MsgTypeEnum.REQ_JOIN_GROUP_NOTICE, null));
+                new RespEntity(MsgTypeEnum.REQ_JOIN_GROUP_NOTICE, JsonUtil.toJSONString(outboundGroupJoinReq)));
     }
 
     /**
@@ -141,9 +155,13 @@ public class ChatService {
     public void handleInviteJoinGroup(Channel channel, ReqEntity reqEntity) {
         InboundGroupInviteReq inboundGroupInviteReq = JsonUtil.parseObject(
                 reqEntity.getContent(), InboundGroupInviteReq.class);
+
+        OutboundGroupJoinInvite groupJoinInvite = new OutboundGroupJoinInvite();
+        BeanUtil.copyProperties(inboundGroupInviteReq, groupJoinInvite);
+
         ChannelGroupUtil.writeAndFlush(
                 inboundGroupInviteReq.getInviteUserIds(),
-                new RespEntity(MsgTypeEnum.INVITE_JOIN_GROUP_NOTICE, null));
+                new RespEntity(MsgTypeEnum.INVITE_JOIN_GROUP_NOTICE, JsonUtil.toJSONString(groupJoinInvite)));
     }
 
     /**
@@ -154,9 +172,13 @@ public class ChatService {
     public void handleDelGroupMember(Channel channel, ReqEntity reqEntity) {
         InboundDelGroupMember inboundDelGroupMember = JsonUtil.parseObject(
                 reqEntity.getContent(), InboundDelGroupMember.class);
+
+        OutboundDelGroupMember outboundDelGroupMember = new OutboundDelGroupMember();
+        BeanUtil.copyProperties(inboundDelGroupMember, outboundDelGroupMember);
+
         ChannelGroupUtil.writeAndFlush(
                 List.of(inboundDelGroupMember.getRecvUserId()),
-                new RespEntity(MsgTypeEnum.DEL_GROUP_MEMBER_NOTICE, null));
+                new RespEntity(MsgTypeEnum.DEL_GROUP_MEMBER_NOTICE, JsonUtil.toJSONString(outboundDelGroupMember)));
     }
 
     /**
@@ -171,8 +193,12 @@ public class ChatService {
         // 不给自己发
         inboundDelGroup.getRecvUserIds().removeIf(reqEntity.getSendUserId()::equals);
 
+        OutboundDelGroup outboundDelGroup = new OutboundDelGroup();
+        // groupId, nickname, groupName
+        BeanUtil.copyProperties(inboundDelGroup, outboundDelGroup);
+
         ChannelGroupUtil.writeAndFlush(
                 inboundDelGroup.getRecvUserIds(),
-                new RespEntity(MsgTypeEnum.DEL_GROUP_NOTICE, null));
+                new RespEntity(MsgTypeEnum.DEL_GROUP_NOTICE, JsonUtil.toJSONString(outboundDelGroup)));
     }
 }

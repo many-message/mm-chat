@@ -19,4 +19,6 @@ import java.util.List;
 @NoArgsConstructor
 public class InboundGroupJoinReq {
     private List<Long> recvUserIds;
+    private String nickname;
+    private String groupName;
 }
